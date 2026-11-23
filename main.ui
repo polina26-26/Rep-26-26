@@ -71,6 +71,32 @@
      </property>
     </column>
    </widget>
+   <widget class="QPushButton" name="Addbtn">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>400</y>
+      <width>171</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Создать новую</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="editbtn">
+    <property name="geometry">
+     <rect>
+      <x>414</x>
+      <y>400</y>
+      <width>151</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Редактировать</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

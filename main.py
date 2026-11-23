@@ -23,7 +23,8 @@ class MainWidget(QMainWindow):
                 item = QTableWidgetItem(str(val))
                 self.tableWidget.setItem(i, j, item)
 
-        self.pushButton.clicked.connect(self.create_new)
+        self.Addbtn.clicked.connect(self.add_form)
+        self.editbtn.clicked.connect(self.edit_form)
 
     def load_table(self):
         with sqlite3.connect("coffee.sqlite") as con:
@@ -35,73 +36,82 @@ class MainWidget(QMainWindow):
             for j, val in enumerate(row):
                 self.tableWidget.setItem(i, j, QTableWidgetItem(str(val)))
 
-
-    def create_new(self):
-        if self.tableWidget.currentRow() != -1:
-            self.curr_id_edit = int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
-            self.edit_form()
-        else:
-            self.add_form()
-
     def edit_form(self):
+        self.curr_id_edit = int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
         dialog = QDialog(self)
         uic.loadUi('addEditCoffeeForm.ui', dialog)
 
-        lineEdit = dialog.lineEdit.text()
-        lineEdit_2 = dialog.lineEdit_2.text()
-        lineEdit_3 = dialog.lineEdit_3.text()
-        lineEdit_4 = dialog.lineEdit_4.text()
-        lineEdit_5 = dialog.lineEdit_5.text()
-        lineEdit_6 = dialog.lineEdit_6.text()
-        lineEdit_7 = dialog.lineEdit_7.text()
-
         with sqlite3.connect("coffee.sqlite") as con:
             cur = con.cursor()
+            row = cur.execute(
+                "SELECT * FROM main_tabel WHERE id = ?", (self.curr_id_edit,)
+            ).fetchone()
 
-            cur.execute("""
-                                    UPDATE main_tabel SET
-                                        id = ?, Название сорта = ?, Степень обжарки = ?,
+        if row:
+            dialog.lineEdit.setText(str(row[0]))
+            dialog.lineEdit_2.setText(str(row[1]))
+            dialog.lineEdit_3.setText(str(row[2]))
+            dialog.lineEdit_4.setText(str(row[3]))
+            dialog.lineEdit_5.setText(str(row[4]))
+            dialog.lineEdit_6.setText(str(row[5]))
+            dialog.lineEdit_7.setText(str(row[6]))
+
+        def save():
+            cur_id = dialog.lineEdit.text()
+            cur_name = dialog.lineEdit_2.text()
+            cur_roast = dialog.lineEdit_3.text()
+            cur_ground = dialog.lineEdit_4.text()
+            cur_desc = dialog.lineEdit_5.text()
+            cur_price = dialog.lineEdit_6.text()
+            cur_volume = dialog.lineEdit_7.text()
+
+            with sqlite3.connect("coffee.sqlite") as con:
+                cur = con.cursor()
+                cur.execute("""
+                    UPDATE main_tabel SET
+                        id = ?, Название сорта = ?, Степень обжарки = ?,
                                         Молотый/в зернах = ?, Описание вкуса = ?, Цена = ?, Обьем упаковки = ? 
-                                    WHERE id = ?
-                                """, (lineEdit, lineEdit_2, lineEdit_3, lineEdit_4, lineEdit_5, lineEdit_6, lineEdit_7,
-                                      self.curr_id_edit))
-            con.commit()
+                    WHERE id = ?
+                """, (cur_id, cur_name, cur_roast, cur_ground,
+                      cur_desc, cur_price, cur_volume, self.curr_id_edit))
+                con.commit()
 
-        dialog.accept()
-        self.load_table()
+            dialog.accept()
+            self.load_table()
 
-        dialog.pushButton.clicked.connect(self.save)
+        dialog.pushButton.clicked.connect(save)
+        dialog.exec()
 
     def add_form(self):
         dialog = QDialog(self)
         uic.loadUi('addEditCoffeeForm.ui', dialog)
 
-        lineEdit = dialog.lineEdit.text()
-        lineEdit_2 = dialog.lineEdit_2.text()
-        lineEdit_3 = dialog.lineEdit_3.text()
-        lineEdit_4 = dialog.lineEdit_4.text()
-        lineEdit_5 = dialog.lineEdit_5.text()
-        lineEdit_6 = dialog.lineEdit_6.text()
-        lineEdit_7 = dialog.lineEdit_7.text()
+        def save():
+            cur_id = dialog.lineEdit.text()
+            cur_name = dialog.lineEdit_2.text()
+            cur_roast = dialog.lineEdit_3.text()
+            cur_ground = dialog.lineEdit_4.text()
+            cur_desc = dialog.lineEdit_5.text()
+            cur_price = dialog.lineEdit_6.text()
+            cur_volume = dialog.lineEdit_7.text()
 
-        with sqlite3.connect("coffee.sqlite") as con:
-            cur = con.cursor()
-            cur.execute("""
-                                    INSERT INTO main_tabel
-                                    (id, Название сорта, Степень обжарки, Молотый/в зернах, 
-                                    Описание вкуса, Цена, Обьем упаковки)
-                                    VALUES (?, ?, ?, ?, ?, ?)
-                                """, (lineEdit, lineEdit_2, lineEdit_3, lineEdit_4,
-                                      lineEdit_5, lineEdit_6, lineEdit_7))
+            with sqlite3.connect("coffee.sqlite") as con:
+                cur = con.cursor()
+                cur.execute("""
+                    INSERT INTO main_tabel
+                    (id, Название сорта, Степень обжарки, Молотый/в зернах, 
+                                    Описание вкуса, Цена, Обьем упаковки) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, (cur_id, cur_name, cur_roast, cur_ground,
+                      cur_desc, cur_price, cur_volume))
+                con.commit()
 
-        dialog.accept()
+            dialog.accept()
+            self.load_table()
 
+        dialog.pushButton.clicked.connect(save)
 
-        dialog.pushButton.clicked.connect(self.save)
+        dialog.exec()
 
-
-    def save(self):
-        self.load_table()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
